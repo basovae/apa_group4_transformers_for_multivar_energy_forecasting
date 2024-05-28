@@ -119,3 +119,4 @@ INFO:root:[Info] Number of parameters: 660360
 INFO:root:[Info] Number of parameters: 164
 INFO:root:[Info] Number of parameters: 164
 INFO:root:[Info] Number of parameters: 1020
+INFO:root:	iters: 156116, epoch: 1 | loss: 0.0030063
