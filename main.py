@@ -209,6 +209,8 @@ def test(setting='setting',test=True):
 
     mae, mse, rmse, mape, mspe = metric(preds, trues)
     log_and_print('mse:{}, mae:{}'.format(mse, mae))
+    log_and_print(f'Test - MAE: {mae}, MSE: {mse}, RMSE: {rmse}, MAPE: {mape}, MSPE: {mspe}')
+
     return 
 
 def log_and_print(text):
