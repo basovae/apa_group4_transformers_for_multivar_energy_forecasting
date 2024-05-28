@@ -11,6 +11,7 @@ class Dataset_Custom(Dataset):
                  features='S', data_path='all_countries.csv',
                  target='Price (EUR/MWhe)', scale=True, timeenc=0, freq='h'):
         # size [seq_len, label_len, pred_len]
+        # info
         if size is None:
             self.seq_len = 24 * 4 * 4
             self.label_len = 24 * 4
@@ -19,6 +20,7 @@ class Dataset_Custom(Dataset):
             self.seq_len = size[0]
             self.label_len = size[1]
             self.pred_len = size[2]
+        # init
         assert flag in ['train', 'test', 'val']
         type_map = {'train': 0, 'val': 1, 'test': 2}
         self.set_type = type_map[flag]
@@ -38,16 +40,20 @@ class Dataset_Custom(Dataset):
         self.scaler = StandardScaler()
         df_raw = pd.read_csv(os.path.join(self.root_path, self.data_path))
 
-        # Encode the country column
+## encoding country names
         country_encoded = pd.get_dummies(df_raw['Country'])
         df_raw = pd.concat([df_raw, country_encoded], axis=1)
+## dropping unnessesary columns
         df_raw = df_raw.drop(columns=['ISO3 Code', 'Datetime (Local)', 'Country'])
+
 
         cols = list(df_raw.columns)
         cols.remove(self.target)
         cols.remove('Datetime (UTC)')
-        df_raw = df_raw[['Datetime (UTC)'] + cols + [self.target]]
+        cols = ['Datetime (UTC)'] + cols + [self.target]
+        df_raw = df_raw[cols]
 
+## defining borders of train, test and validation sets based on the lenght (70% vs. 20% vs. 10%)
         num_train = int(len(df_raw) * 0.7)
         num_test = int(len(df_raw) * 0.2)
         num_vali = len(df_raw) - num_train - num_test
