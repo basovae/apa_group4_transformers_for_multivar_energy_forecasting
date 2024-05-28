@@ -115,3 +115,13 @@ INFO:root:Basisformer(
   )
 )
 INFO:root:[Info] Number of parameters: 35444
+INFO:root:	iters: 19514, epoch: 1 | loss: 0.0019356
+INFO:root:	iters: 39028, epoch: 1 | loss: 0.0066743
+INFO:root:	iters: 58542, epoch: 1 | loss: 0.0020620
+INFO:root:	iters: 78056, epoch: 1 | loss: 0.0029214
+INFO:root:	iters: 97570, epoch: 1 | loss: 0.0012264
+INFO:root:Epoch: 1 cost time: 1590.178428888321
+INFO:root:loss_pred:0.005092933505035321
+INFO:root:loss entropy:0.00027435029158721913
+INFO:root:loss smooth:0.001277400242997595
+INFO:root:Epoch: 1 | Train Loss: 0.0066447 Vali Loss: 0.0025959 Test Loss: 0.0033238
