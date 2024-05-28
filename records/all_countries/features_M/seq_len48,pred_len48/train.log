@@ -1,5 +1,5 @@
 INFO:root:Args in experiment:
-INFO:root:Namespace(is_training=True, device=0, num_workers=0, data='custom', root_path='data', data_path='all_countries.csv', features='M', target='Price (EUR/MWhe)', freq='h', seq_len=48, label_len=48, pred_len=48, embed='timeF', heads=8, d_model=50, N=5, block_nums=1, bottleneck=1, map_bottleneck=10, train_epochs=1, batch_size=16, patience=3, learning_rate=0.0005, tau=0.07, loss_weight_prediction=1.0, loss_weight_infonce=1.0, loss_weight_smooth=1.0, check_point='checkpoint')
+INFO:root:Namespace(is_training=True, device=0, num_workers=0, data='custom', root_path='data', data_path='all_countries.csv', features='M', target='Price (EUR/MWhe)', freq='h', seq_len=48, label_len=48, pred_len=48, embed='timeF', heads=8, d_model=50, N=5, block_nums=1, bottleneck=1, map_bottleneck=10, train_epochs=1, batch_size=32, patience=5, learning_rate=0.0001, tau=0.07, loss_weight_prediction=1.0, loss_weight_infonce=1.0, loss_weight_smooth=1.0, check_point='checkpoint')
 INFO:root:Basisformer(
   (coefnet): Coefnet(
     (layers): ModuleList(
@@ -115,3 +115,13 @@ INFO:root:Basisformer(
   )
 )
 INFO:root:[Info] Number of parameters: 130428
+INFO:root:	iters: 9756, epoch: 1 | loss: 0.0032957
+INFO:root:	iters: 19512, epoch: 1 | loss: 0.0061469
+INFO:root:	iters: 29268, epoch: 1 | loss: 0.0045340
+INFO:root:	iters: 39024, epoch: 1 | loss: 0.0041924
+INFO:root:	iters: 48780, epoch: 1 | loss: 0.0069651
+INFO:root:Epoch: 1 cost time: 1697.8723361492157
+INFO:root:loss_pred:0.006407576402384785
+INFO:root:loss entropy:0.00047289860306118934
+INFO:root:loss smooth:0.001316329427317759
+INFO:root:Epoch: 1 | Train Loss: 0.0081968 Vali Loss: 0.0032248 Test Loss: 0.0042434
