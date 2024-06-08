@@ -49,13 +49,15 @@ class Basisformer(nn.Module):
                                   self.N*(self.seq_len+self.pred_len), #output dim
                                   map_bottleneck, # hidden layer size for the MLP
                                   bias=True) 
-        self.tau = tau
-        self.epsilon = 1E-5
+        self.tau = tau # temperature parameter
+        self.epsilon = 1E-5 # to avoid deletion by zero
         
     def forward(self,x,mark,y=None,train=True,y_mark=None):
+        # normalization
         mean_x = x.mean(dim=1,keepdim=True)
         std_x = x.std(dim=1,keepdim=True)
         feature = (x - mean_x) / (std_x + self.epsilon)
+        # reshaping
         B,L,C = feature.shape
         feature = feature.permute(0,2,1)
         feature = self.project1(feature)   #(B,C,d)
@@ -86,9 +88,10 @@ class Basisformer(nn.Module):
         out = torch.matmul(score,base).permute(0,2,1,3).reshape(B,C,-1)  #(B,C,k * (L/k))
         out = self.MLP_sy(out).reshape(B,C,-1).permute(0,2,1)   #（BC,L）
         
+        # reverse normalization
         output = out * (std_x + self.epsilon) + mean_x
 
-        #loss
+        #loss calculation
         if train:
             l_smooth = torch.einsum('xl,bln->xbn',self.smooth_arr,m)
             l_smooth = abs(l_smooth).mean()
