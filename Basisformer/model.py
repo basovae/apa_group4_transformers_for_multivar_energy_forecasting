@@ -11,19 +11,21 @@ from utils import Coefnet,MLP_bottle
 class Basisformer(nn.Module):
     def __init__(self,seq_len,pred_len,d_model,heads,basis_nums,block_nums,bottle,map_bottleneck,device,tau):
         super().__init__()
-        self.d_model = d_model
-        self.k = heads
-        self.N = basis_nums
+        self.d_model = d_model # model dimentions
+        self.k = heads # number of attention heads
+        self.N = basis_nums # number of basis functions
         self.coefnet = Coefnet(blocks=block_nums,d_model=d_model,heads=heads)
             
-        self.pred_len = pred_len
-        self.seq_len = seq_len
+        self.pred_len = pred_len # prediction length
+        self.seq_len = seq_len # sequence length
+
+        # Multi-Layer Perceptron
+        self.MLP_x = MLP_bottle(seq_len,heads * int(seq_len/heads),int(seq_len/bottle)) #processes the input sequence length to create a more compact representation
+        self.MLP_y = MLP_bottle(pred_len,heads * int(pred_len/heads),int(pred_len/bottle)) #same for prediction
+        self.MLP_sx = MLP_bottle(heads * int(seq_len/heads),seq_len,int(seq_len/bottle)) # re-expands the sequence length helping to restore some structure
+        self.MLP_sy = MLP_bottle(heads * int(pred_len/heads),pred_len,int(pred_len/bottle)) # same for prediction
         
-        self.MLP_x = MLP_bottle(seq_len,heads * int(seq_len/heads),int(seq_len/bottle))
-        self.MLP_y = MLP_bottle(pred_len,heads * int(pred_len/heads),int(pred_len/bottle))
-        self.MLP_sx = MLP_bottle(heads * int(seq_len/heads),seq_len,int(seq_len/bottle))
-        self.MLP_sy = MLP_bottle(heads * int(pred_len/heads),pred_len,int(pred_len/bottle))
-        
+        # Linear layers with weight normalization for projecting sequences into the model dimension
         self.project1 = wn(nn.Linear(seq_len,d_model))
         self.project2 = wn(nn.Linear(seq_len,d_model))
         self.project3 = wn(nn.Linear(pred_len,d_model))
@@ -31,7 +33,7 @@ class Basisformer(nn.Module):
         self.criterion1 = nn.MSELoss()
         self.criterion2 = nn.L1Loss(reduction='none')
         
-        self.device = device
+        self.device = device # setting the device (CPU or GPU)
                         
         # smooth array
         arr = torch.zeros((seq_len+pred_len-2,seq_len+pred_len))
@@ -40,7 +42,13 @@ class Basisformer(nn.Module):
             arr[i,i+1] = 2
             arr[i,i+2] = -1
         self.smooth_arr = arr.to(device)
-        self.map_MLP = MLP_bottle(1,self.N*(self.seq_len+self.pred_len),map_bottleneck,bias=True)
+
+        # initializing basis function
+        # MLP maps input to a higher dim space
+        self.map_MLP = MLP_bottle(1, # input dim
+                                  self.N*(self.seq_len+self.pred_len), #output dim
+                                  map_bottleneck, # hidden layer size for the MLP
+                                  bias=True) 
         self.tau = tau
         self.epsilon = 1E-5
         
@@ -52,15 +60,28 @@ class Basisformer(nn.Module):
         feature = feature.permute(0,2,1)
         feature = self.project1(feature)   #(B,C,d)
         
-        m = self.map_MLP(mark[:,0].unsqueeze(1)).reshape(B,self.seq_len + self.pred_len,self.N)
+        # creating basis function
+        m = self.map_MLP( # maps the input marker to a higher-dimensional space
+            mark[:,0].unsqueeze(1) # selects the first marker and reshapes it for the MLP
+                         ).reshape(B,self.seq_len + self.pred_len,self.N) #reshapes the output to have other dimensions
+        
+        # normalization
         m = m / torch.sqrt(torch.sum(m**2,dim=1,keepdim=True)+self.epsilon)
         
-        raw_m1 = m[:,:self.seq_len].permute(0,2,1)  #(B,L,N)
-        raw_m2 = m[:,self.seq_len:].permute(0,2,1)   #(B,L',N)
-        m1 = self.project2(raw_m1)    #(B,N,d)
-        
-        score,attn_x1,attn_x2 = self.coefnet(m1,feature)    #(B,k,C,N)
+        # using basis functions in the model by splitting and projecting basis functions
+        raw_m1 = m[:,:self.seq_len].permute(0,2,1)  #(B,L,N) # corresponding to the input sequence
+        raw_m2 = m[:,self.seq_len:].permute(0,2,1)   #(B,L',N) #corresponding to the prediction sequence
+        # permute(0,2,1) changes the order of dimensions for compatibility with other operations
 
+        m1 = self.project2(raw_m1)    #(B,N,d) projects the input sequence basis functions into the model dimension
+        
+        # attention mechanism with basis functions
+        score,attn_x1,attn_x2 = self.coefnet(m1,feature)    #(B,k,C,N) 
+        # applies the coefficient network to the projected basis functions and the features extracted from the input sequence
+        # scores represent how much each basis function contributes to the final representation
+
+
+        # combining basis functions
         base = self.MLP_y(raw_m2).reshape(B,self.N,self.k,-1).permute(0,2,1,3)   #(B,k,N,L/k)
         out = torch.matmul(score,base).permute(0,2,1,3).reshape(B,C,-1)  #(B,C,k * (L/k))
         out = self.MLP_sy(out).reshape(B,C,-1).permute(0,2,1)   #（BC,L）
