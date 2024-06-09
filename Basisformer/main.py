@@ -56,47 +56,66 @@ def vali(vali_data, vali_loader, criterion, epoch, writer, flag='vali'):
 def train():
     num_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
     log_and_print('[Info] Number of parameters: {}'.format(num_params))
+
+    # data sets and their corresponding loaders
     train_set, train_loader = data_provider(args, "train")
     vali_data, vali_loader = data_provider(args,flag='val')
     test_data, test_loader = data_provider(args,flag='test')
     
+
     para1 = [param for name,param in model.named_parameters() if 'map_MLP' in name]
     para2 = [param for name,param in model.named_parameters() if 'map_MLP' not in name]
+
+    # optimizer updates the model parameters during training
     # optimizer = AdaBelief(model.parameters(), lr=args.learning_rate, eps=1e-16, betas=(0.9,0.999), weight_decouple = True, rectify = False) 
     optimizer = AdaBelief([{'params':para1,'lr':5e-3},{'params':para2,'lr':args.learning_rate}], eps=1e-16, betas=(0.9,0.999), weight_decouple = True, rectify = False) 
     # optimizer = AdaBelief(model.parameters(), lr=args.learning_rate, eps=1e-16, betas=(0.9,0.999), weight_decouple = True, rectify = False) 
+    
+
     criterion = nn.MSELoss()
     criterion_view = nn.MSELoss(reduction='none')
 
+    # number of batches in the training set?
     train_steps = len(train_loader)
-
+    # initializing the Tensor Board writer for logging training process
     writer = SummaryWriter(os.path.join(record_dir,'event'))
 
+    # defining for early stopping
     best_loss = 0
     count_error = 0
     count = 0
     
 
+    #training loop
+
     for epoch in range(args.train_epochs):
+        #lists to store
         train_loss = []
         loss_pred = []
         loss_of_ce = []
         l_s = []
+        #setting model to training mode
         model.train()
         epoch_time = time.time()
+
         for i, (batch_x, batch_y, batch_x_mark, batch_y_mark,index) in enumerate(train_loader):
+            #clears the gradients of all optimized tensors
             optimizer.zero_grad()
 
-            # to cuda
+            # loading data to the specified device (originally to cuda)
             batch_x = batch_x.float().to(device) # (B,L,C)
             batch_y = batch_y.float().to(device) # (B,L,C)
             batch_y_mark = batch_y_mark.float().to(device)
             
+            #feature dimension
             f_dim = -1 if args.features == 'MS' else 0
+            #matching the target sequence length required by the model
             batch_y = batch_y[:, -args.pred_len:, f_dim:].to(device)
 
+            #forward pass through the model to get outputs and losses
             outputs,loss_infonce,loss_smooth,attn_x1,attn_x2,attn_y1,attn_y2 = model(batch_x,index.float().to(device),batch_y,y_mark=batch_y_mark)
             
+            # calculating loss
             loss_p = criterion(outputs, batch_y)
             lam1 = args.loss_weight_prediction
             lam2 = args.loss_weight_infonce
@@ -108,22 +127,27 @@ def train():
             #     fig = plot_seq_feature(outputs, batch_y,batch_x,error=True,input=batch_x)
             #     writer.add_figure("figure_error", fig, global_step=count_error)
             #     log_and_print(loss_p)
-                
+
+            # total loss  
             loss = lam1 * loss_p + lam2 * loss_infonce  + lam3 * loss_smooth
             train_loss.append(loss.item())
             loss_pred.append(loss_p.item())
             loss_of_ce.append(loss_infonce.item())
             l_s.append(loss_smooth.item())
+
+            # greadient of the loss
             loss.backward()
+
+            #updating model parameters
             optimizer.step()
 
-
+            #logging every fifth step of the training process 
             if (i+1) % (train_steps//5) == 0:
                 log_and_print("\titers: {0}, epoch: {1} | loss: {2:.7f}".format(i + 1, epoch + 1, loss.item()))
 
-
+        # every epoch logging
         log_and_print("Epoch: {} cost time: {}".format(epoch + 1, time.time() - epoch_time))
-
+        # losses of every epoch
         train_loss = np.average(train_loss)
         loss1 = np.average(loss_pred)
         log_and_print('loss_pred:{0}'.format(loss1))
@@ -133,33 +157,35 @@ def train():
         log_and_print('loss smooth:{0}'.format(loss3))
         vali_loss = vali(vali_data, vali_loader, criterion_view, epoch, writer, 'vali')
         test_loss = vali(test_data, test_loader, criterion_view, epoch, writer, 'test')
-
+        # logging
         log_and_print("Epoch: {0} | Train Loss: {1:.7f} Vali Loss: {2:.7f} Test Loss: {3:.7f}".format(
             epoch + 1, train_loss, vali_loss, test_loss))
 
+        # figures to TensorBoard
         fig = plot_seq_feature(outputs, batch_y, batch_x)
         writer.add_figure("figure_train", fig, global_step=epoch)
         writer.add_scalar('train_loss', train_loss, global_step=epoch)
         writer.add_scalar('vali_loss', vali_loss, global_step=epoch)
         writer.add_scalar('test_loss', test_loss, global_step=epoch)
         
+        #saving model chaeckpoints
         ckpt_path = os.path.join(record_dir,args.check_point)
         if not os.path.exists(ckpt_path):
             os.makedirs(ckpt_path)
-                
+        #saving in new folder if it is firs tepoch
         if best_loss == 0:
             best_loss = vali_loss
             torch.save(model.state_dict(), os.path.join(ckpt_path, 'valid_best_checkpoint.pth'))
         else:
-            if vali_loss < best_loss:
+            if vali_loss < best_loss: #updates the results if vali loss improves
                 torch.save(model.state_dict(), os.path.join(ckpt_path, 'valid_best_checkpoint.pth'))
                 best_loss = vali_loss
                 count = 0
             else:
                 count = count + 1
-
+        #final save at the end of each epoch
         torch.save(model.state_dict(), os.path.join(ckpt_path, 'final_checkpoint.pth'))
-        
+        #stopping training if loss doesn't improve for a number of epochs
         if count >= args.patience:
             break
     return

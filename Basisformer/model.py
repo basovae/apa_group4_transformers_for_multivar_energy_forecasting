@@ -49,7 +49,7 @@ class Basisformer(nn.Module):
                                   self.N*(self.seq_len+self.pred_len), #output dim
                                   map_bottleneck, # hidden layer size for the MLP
                                   bias=True) 
-        self.tau = tau # temperature parameter
+        self.tau = tau # temperature parameter 
         self.epsilon = 1E-5 # to avoid deletion by zero
         
     def forward(self,x,mark,y=None,train=True,y_mark=None):
