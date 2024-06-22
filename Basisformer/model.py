@@ -61,7 +61,7 @@ class Basisformer(nn.Module):
         B,L,C = feature.shape
         feature = feature.permute(0,2,1)
         feature = self.project1(feature)   #(B,C,d)
-        
+
         # creating basis function
         m = self.map_MLP( # maps the input marker to a higher-dimensional space
             mark[:,0].unsqueeze(1) # selects the first marker and reshapes it for the MLP

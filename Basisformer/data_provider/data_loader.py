@@ -92,9 +92,9 @@ class Dataset_Custom(Dataset):
         self.data_stamp = data_stamp
 
     def __getitem__(self, index):
-        s_begin = index
+        s_begin = index # input
         s_end = s_begin + self.seq_len
-        r_begin = s_end - self.label_len
+        r_begin = s_end - self.label_len # output sequence
         r_end = r_begin + self.label_len + self.pred_len
 
         seq_x = self.data_x[s_begin:s_end]
@@ -103,7 +103,9 @@ class Dataset_Custom(Dataset):
         seq_y_mark = self.data_stamp[r_begin:r_end]
         
         index_list = np.arange(index, index + self.seq_len + self.pred_len, 1)
-        norm_index = index_list / self.len
+        norm_index = index_list / self.len # specific to Basisformer
+        # indexing based on corresponding model
+        # taken from repos of models
 
         return seq_x, seq_y, seq_x_mark, seq_y_mark, norm_index
 
