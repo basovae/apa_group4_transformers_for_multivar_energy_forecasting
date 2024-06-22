@@ -1,0 +1,146 @@
+INFO:root:Args in experiment:
+INFO:root:Namespace(N=10, batch_size=24, block_nums=2, bottleneck=2, check_point='checkpoint', d_model=100, data_path='all_countries.csv', device=0, features='M', freq='h', heads=16, is_training=True, learning_rate=0.0005, loss_weight_infonce=1.0, loss_weight_prediction=1.0, loss_weight_smooth=1.0, map_bottleneck=20, num_workers=0, patience=5, pred_len=48, root_path='data', seq_len=96, tau=0.07, train_epochs=1)
+INFO:root:Basisformer(
+  (coefnet): Coefnet(
+    (layers): ModuleList(
+      (0-1): 2 x BCAB(
+        (cross_attention_basis): channel_AutoCorrelationLayer(
+          (query_projection): Linear(in_features=100, out_features=96, bias=True)
+          (key_projection): Linear(in_features=100, out_features=96, bias=True)
+          (value_projection): Linear(in_features=100, out_features=96, bias=True)
+          (out_projection): Linear(in_features=96, out_features=100, bias=True)
+          (attend): Softmax(dim=-1)
+          (dropout): Dropout(p=0.1, inplace=False)
+        )
+        (conv1_basis): Linear(in_features=100, out_features=400, bias=True)
+        (conv2_basis): Linear(in_features=400, out_features=100, bias=True)
+        (dropout_basis): Dropout(p=0.1, inplace=False)
+        (cross_attention_ts): channel_AutoCorrelationLayer(
+          (query_projection): Linear(in_features=100, out_features=96, bias=True)
+          (key_projection): Linear(in_features=100, out_features=96, bias=True)
+          (value_projection): Linear(in_features=100, out_features=96, bias=True)
+          (out_projection): Linear(in_features=96, out_features=100, bias=True)
+          (attend): Softmax(dim=-1)
+          (dropout): Dropout(p=0.1, inplace=False)
+        )
+        (conv1_ts): Linear(in_features=100, out_features=400, bias=True)
+        (conv2_ts): Linear(in_features=400, out_features=100, bias=True)
+        (dropout_ts): Dropout(p=0.1, inplace=False)
+        (layer_norm11): LayerNorm((100,), eps=1e-05, elementwise_affine=True)
+        (layer_norm12): LayerNorm((100,), eps=1e-05, elementwise_affine=True)
+        (layer_norm21): LayerNorm((100,), eps=1e-05, elementwise_affine=True)
+        (layer_norm22): LayerNorm((100,), eps=1e-05, elementwise_affine=True)
+      )
+    )
+    (last_layer): last_layer(
+      (query_projection): Linear(in_features=100, out_features=96, bias=True)
+      (key_projection): Linear(in_features=100, out_features=96, bias=True)
+    )
+  )
+  (MLP_x): MLP_bottle(
+    (linear1): Sequential(
+      (0): Linear(in_features=96, out_features=48, bias=True)
+      (1): ReLU()
+      (2): Linear(in_features=48, out_features=48, bias=True)
+    )
+    (linear2): Sequential(
+      (0): Linear(in_features=48, out_features=48, bias=True)
+      (1): ReLU()
+      (2): Linear(in_features=48, out_features=96, bias=True)
+    )
+    (skip): Linear(in_features=96, out_features=48, bias=True)
+    (act): ReLU()
+  )
+  (MLP_y): MLP_bottle(
+    (linear1): Sequential(
+      (0): Linear(in_features=48, out_features=24, bias=True)
+      (1): ReLU()
+      (2): Linear(in_features=24, out_features=24, bias=True)
+    )
+    (linear2): Sequential(
+      (0): Linear(in_features=24, out_features=24, bias=True)
+      (1): ReLU()
+      (2): Linear(in_features=24, out_features=48, bias=True)
+    )
+    (skip): Linear(in_features=48, out_features=24, bias=True)
+    (act): ReLU()
+  )
+  (MLP_sx): MLP_bottle(
+    (linear1): Sequential(
+      (0): Linear(in_features=96, out_features=48, bias=True)
+      (1): ReLU()
+      (2): Linear(in_features=48, out_features=48, bias=True)
+    )
+    (linear2): Sequential(
+      (0): Linear(in_features=48, out_features=48, bias=True)
+      (1): ReLU()
+      (2): Linear(in_features=48, out_features=96, bias=True)
+    )
+    (skip): Linear(in_features=96, out_features=48, bias=True)
+    (act): ReLU()
+  )
+  (MLP_sy): MLP_bottle(
+    (linear1): Sequential(
+      (0): Linear(in_features=48, out_features=24, bias=True)
+      (1): ReLU()
+      (2): Linear(in_features=24, out_features=24, bias=True)
+    )
+    (linear2): Sequential(
+      (0): Linear(in_features=24, out_features=24, bias=True)
+      (1): ReLU()
+      (2): Linear(in_features=24, out_features=48, bias=True)
+    )
+    (skip): Linear(in_features=48, out_features=24, bias=True)
+    (act): ReLU()
+  )
+  (project1): Linear(in_features=96, out_features=100, bias=True)
+  (project2): Linear(in_features=96, out_features=100, bias=True)
+  (project3): Linear(in_features=48, out_features=100, bias=True)
+  (project4): Linear(in_features=48, out_features=100, bias=True)
+  (criterion1): MSELoss()
+  (criterion2): L1Loss()
+  (map_MLP): MLP_bottle(
+    (linear1): Sequential(
+      (0): Linear(in_features=4, out_features=20, bias=True)
+      (1): ReLU()
+      (2): Linear(in_features=20, out_features=20, bias=True)
+    )
+    (linear2): Sequential(
+      (0): Linear(in_features=20, out_features=20, bias=True)
+      (1): ReLU()
+      (2): Linear(in_features=20, out_features=1440, bias=True)
+    )
+    (skip): Linear(in_features=4, out_features=20, bias=True)
+    (act): ReLU()
+  )
+)
+INFO:root:[Info] Number of parameters: 612096
+INFO:root:	iters: 544, epoch: 1 | loss: 0.2326583
+INFO:root:	iters: 1088, epoch: 1 | loss: 0.4396389
+INFO:root:	iters: 1632, epoch: 1 | loss: 0.1467273
+INFO:root:	iters: 2176, epoch: 1 | loss: 0.1717760
+INFO:root:	iters: 2720, epoch: 1 | loss: 0.1535341
+INFO:root:Epoch: 1 cost time: 289.59128403663635
+INFO:root:loss_pred:0.22339676440348086
+INFO:root:loss entropy:0.11945020473441541
+INFO:root:loss smooth:0.031737461400165944
+INFO:root:loading model
+INFO:root:total_time:21.72616982460022
+INFO:root:avg_time:0.0013398809635892827
+INFO:root:mse:3302.60986328125, mae:34.70249938964844
+INFO:root:loading model
+INFO:root:total_time:20.431738138198853
+INFO:root:avg_time:0.0012600516890656091
+INFO:root:mse:3302.611572265625, mae:34.7025032043457
+INFO:root:loading model
+INFO:root:total_time:20.249222993850708
+INFO:root:avg_time:0.0012487957443016162
+INFO:root:mse:4081.308837890625, mae:39.107391357421875
+INFO:root:loading model
+INFO:root:total_time:21.020262718200684
+INFO:root:avg_time:0.0012963467602960643
+INFO:root:mse:3302.613525390625, mae:34.702510833740234
+INFO:root:loading model
+INFO:root:total_time:20.952849864959717
+INFO:root:avg_time:0.001292189322538373
+INFO:root:mse:3302.61279296875, mae:34.70246124267578

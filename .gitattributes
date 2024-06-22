@@ -1,1 +1,2 @@
 Basisformer/data/all_countries.csv filter=lfs diff=lfs merge=lfs -text
+Basisformer/records/all_countries/features_M/seq_len96,pred_len48/test_results.npz filter=lfs diff=lfs merge=lfs -text
