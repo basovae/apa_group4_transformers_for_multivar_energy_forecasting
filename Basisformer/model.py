@@ -1,13 +1,15 @@
 from utils import Coefnet,MLP_bottle
 
+
 # The Basisformer model integrates all the components to perform time series forecasting.
 #  It normalizes the input, generates basis functions, processes them through the coefficient network,
 #  and combines the basis functions to produce the forecast output.
 #  It also includes mechanisms for loss calculation during training,
 #  using both smoothness and entropy losses to optimize the model.
 
+
 class Basisformer(nn.Module):
-    def __init__(self,seq_len,pred_len,d_model,heads,basis_nums,block_nums,bottleneck,map_bottleneck,device,tau):
+    def __init__(self,seq_len,pred_len,d_model,heads,basis_nums,block_nums,bottle,map_bottleneck,device,tau):
         super().__init__()
         self.d_model = d_model # the dimensionality of the model's hidden state
         self.k = heads # number of attention heads
@@ -18,10 +20,10 @@ class Basisformer(nn.Module):
         self.seq_len = seq_len # sequence length
 
         # Multi-Layer Perceptron
-        self.MLP_x = MLP_bottle(seq_len,heads * int(seq_len/heads),int(seq_len/bottleneck)) #processes the input sequence length to create a more compact representation
-        self.MLP_y = MLP_bottle(pred_len,heads * int(pred_len/heads),int(pred_len/bottleneck)) #same for prediction
-        self.MLP_sx = MLP_bottle(heads * int(seq_len/heads),seq_len,int(seq_len/bottleneck)) # re-expands the sequence length helping to restore some structure
-        self.MLP_sy = MLP_bottle(heads * int(pred_len/heads),pred_len,int(pred_len/bottleneck)) # same for prediction
+        self.MLP_x = MLP_bottle(seq_len,heads * int(seq_len/heads),int(seq_len/bottle)) #processes the input sequence length to create a more compact representation
+        self.MLP_y = MLP_bottle(pred_len,heads * int(pred_len/heads),int(pred_len/bottle)) #same for prediction
+        self.MLP_sx = MLP_bottle(heads * int(seq_len/heads),seq_len,int(seq_len/bottle)) # re-expands the sequence length helping to restore some structure
+        self.MLP_sy = MLP_bottle(heads * int(pred_len/heads),pred_len,int(pred_len/bottle)) # same for prediction
 
 
         # linear layers with weight normalization for projecting sequences into the model dimension
@@ -139,3 +141,4 @@ class Basisformer(nn.Module):
 
             score_y,attn_y1,attn_y2 = self.coefnet(m2,feature_y)    #(B,k,C,N)
             return output,m,attn_x1,attn_x2,attn_y1,attn_y2
+

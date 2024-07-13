@@ -2,56 +2,20 @@ import argparse
 import torch
 import sys
 sys.path.append('.')
-from data_provider.data_factory import data_provider
 from torch import optim
 from model import Basisformer
 from torch import nn
 import time
 import numpy as np
 from evaluate_tool import metric
-import os
-import numpy as np
 from torch.utils.tensorboard import SummaryWriter
 from pyplot import plot_seq_feature
 from adabelief_pytorch import AdaBelief
 import logging
 import random
+import matplotlib.pyplot as plt
+import os
 
-
-def vali(vali_data, vali_loader, criterion, epoch, writer, flag='vali'):
-    total_loss = []
-    model.eval()
-    count_error = 0
-    with torch.no_grad():
-        for i, (batch_x, batch_y, batch_x_mark, batch_y_mark,index) in enumerate(vali_loader):
-            batch_x = batch_x.float().to(device)
-            batch_y = batch_y.float()
-
-            f_dim = -1 if args.features == 'MS' else 0
-            origin = batch_y[:, :args.seq_len, f_dim:].to(device)
-            batch_y = batch_y[:, -args.pred_len:, f_dim:].to(device)
-            batch_y_mark = batch_y_mark.float().to(device)
-            
-            real_batch_x = batch_x
-            
-            outputs,m,attn_x1,attn_x2,attn_y1,attn_y2 = model(batch_x,index.float().to(device),batch_y,train=False,y_mark=batch_y_mark)
-            
-            pred = outputs.detach().cpu()
-            true = batch_y.detach().cpu()
-
-            loss_raw = criterion(pred, true)
-            loss = loss_raw.mean()
-
-            total_loss.append(loss)
-
-            if i == 0:
-                fig = plot_seq_feature(outputs, batch_y, real_batch_x, flag)
-                writer.add_figure("figure_{}".format(flag), fig, global_step=epoch)
-                    
-    total_loss = np.average(total_loss)
-        
-    model.train()
-    return total_loss
 
 def train():
     num_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
@@ -239,6 +203,57 @@ def test(setting='setting',test=True):
 
     return 
 
+def test(model, test_loader, record_dir, args, device, scaler, country_names, test=True):
+    if test:
+        log_and_print('loading model')
+        model.load_state_dict(torch.load(os.path.join(record_dir, args.check_point, 'valid_best_checkpoint.pth')))
+
+    preds = []
+    trues = []
+
+    model.eval()
+    t1 = time.time()
+    with torch.no_grad():
+        for i, (batch_x, batch_y, batch_x_mark, batch_y_mark, index) in enumerate(test_loader):
+            batch_x = batch_x.float().to(device)
+            batch_y = batch_y.float().to(device)
+            batch_x_mark = batch_x_mark.float().to(device)
+            batch_y_mark = batch_y_mark.float().to(device)
+
+            f_dim = -1 if args.features == 'MS' else 0
+            batch_y = batch_y[:, -args.pred_len:, f_dim:].to(device)
+
+            outputs, m, attn_x1, attn_x2, attn_y1, attn_y2 = model(batch_x, batch_x_mark, batch_y, train=False, y_mark=batch_y_mark)
+
+            outputs = outputs.detach().cpu().numpy()
+            batch_y = batch_y.detach().cpu().numpy()
+
+            outputs_rescaled = scaler.inverse_transform(outputs.reshape(-1, outputs.shape[-1])).reshape(outputs.shape)
+            batch_y_rescaled = scaler.inverse_transform(batch_y.reshape(-1, batch_y.shape[-1])).reshape(batch_y.shape)
+
+            preds.append(outputs_rescaled)
+            trues.append(batch_y_rescaled)
+
+    t2 = time.time()
+    log_and_print('total_time:{0}'.format(t2 - t1))
+    log_and_print('avg_time:{0}'.format((t2 - t1) / len(test_loader.dataset)))
+
+    # Flatten lists
+    preds = [item for sublist in preds for item in sublist]
+    trues = [item for sublist in trues for item in sublist]
+
+    preds = np.array(preds)
+    trues = np.array(trues)
+    preds = preds.reshape(-1, preds.shape[-2], preds.shape[-1])
+    trues = trues.reshape(-1, trues.shape[-2], trues.shape[-1])
+
+    # Save the results to a file
+    np.savez(os.path.join(record_dir, 'test_results.npz'), preds=preds, trues=trues, country_names=country_names)
+
+    mae, mse, rmse, mape, mspe = metric(preds, trues)
+    log_and_print('mse:{}, mae:{}'.format(mse, mae))
+    return mae, mse, rmse, mape, mspe
+
 def log_and_print(text):
     logging.info(text)
     print(text)
@@ -377,3 +392,30 @@ if __name__ == "__main__":
     else:
         test()
 
+def plot_predictions(true, pred, country_names, num_samples=24, samples_per_figure=6):
+    num_figures = num_samples // samples_per_figure
+    if num_samples % samples_per_figure:
+        num_figures += 1
+    
+    for fig_num in range(num_figures):
+        plt.figure(figsize=(20, 12))
+        start_idx = fig_num * samples_per_figure
+        end_idx = min((fig_num + 1) * samples_per_figure, num_samples)
+        
+        for i in range(start_idx, end_idx):
+            plt.subplot(samples_per_figure // 2, 2, (i % samples_per_figure) + 1)
+            plt.plot(true[i], label='True')
+            plt.plot(pred[i], label='Pred')
+            plt.legend()
+            plt.title(f'{country_names[i]}')
+        
+        plt.tight_layout()
+        plt.show()
+
+# Load the results from the file
+def load_and_plot_results(record_dir, num_samples=24, samples_per_figure=6):
+    data = np.load(os.path.join(record_dir, 'test_results.npz'))
+    preds = data['preds']
+    trues = data['trues']
+    country_names = data['country_names']
+    plot_predictions(trues, preds, country_names, num_samples, samples_per_figure)
