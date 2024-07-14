@@ -1,12 +1,34 @@
+import logging
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from layers.Transformer_EncDec import Encoder, EncoderLayer
-from layers.SelfAttention_Family import FullAttention, AttentionLayer
-from layers.Embed import DataEmbedding_inverted
+from iTransformer.layers.Transformer_EncDec import Encoder, EncoderLayer
+from iTransformer.layers.SelfAttention_Family import FullAttention, AttentionLayer
+from iTransformer.layers.Embed import DataEmbedding_inverted
 import numpy as np
 
+logging.basicConfig(level=logging.INFO)
 
+class Config:
+    seq_len = 96
+    pred_len = 48
+    output_attention = False
+    use_norm = True
+    d_model = 512
+    embed = 'timeF'
+    freq = 'h'
+    dropout = 0.1
+    class_strategy = 'weighted'
+    factor = 5
+    n_heads = 8
+    d_ff = 2048
+    e_layers = 2
+    activation = 'relu'
+
+# Initialize configurations
+configs = Config()
+
+# Define the Model class as provided
 class Model(nn.Module):
     """
     Paper link: https://arxiv.org/abs/2310.06625
