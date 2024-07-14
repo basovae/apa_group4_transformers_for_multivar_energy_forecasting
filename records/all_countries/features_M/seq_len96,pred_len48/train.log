@@ -1,0 +1,240 @@
+INFO:root:Args in experiment:
+INFO:root:Namespace(N=10, batch_size=24, block_nums=2, bottleneck=2, check_point='checkpoint', d_model=100, data_path='all_countries.csv', device=0, features='M', freq='h', heads=16, is_training=True, learning_rate=0.0005, loss_weight_infonce=1.0, loss_weight_prediction=1.0, loss_weight_smooth=1.0, map_bottleneck=20, num_workers=0, patience=5, pred_len=48, root_path='data', seq_len=96, tau=0.07, train_epochs=1)
+INFO:root:Basisformer(
+  (coefnet): Coefnet(
+    (layers): ModuleList(
+      (0-1): 2 x BCAB(
+        (cross_attention_basis): channel_AutoCorrelationLayer(
+          (query_projection): Linear(in_features=100, out_features=96, bias=True)
+          (key_projection): Linear(in_features=100, out_features=96, bias=True)
+          (value_projection): Linear(in_features=100, out_features=96, bias=True)
+          (out_projection): Linear(in_features=96, out_features=100, bias=True)
+          (attend): Softmax(dim=-1)
+          (dropout): Dropout(p=0.1, inplace=False)
+        )
+        (conv1_basis): Linear(in_features=100, out_features=400, bias=True)
+        (conv2_basis): Linear(in_features=400, out_features=100, bias=True)
+        (dropout_basis): Dropout(p=0.1, inplace=False)
+        (cross_attention_ts): channel_AutoCorrelationLayer(
+          (query_projection): Linear(in_features=100, out_features=96, bias=True)
+          (key_projection): Linear(in_features=100, out_features=96, bias=True)
+          (value_projection): Linear(in_features=100, out_features=96, bias=True)
+          (out_projection): Linear(in_features=96, out_features=100, bias=True)
+          (attend): Softmax(dim=-1)
+          (dropout): Dropout(p=0.1, inplace=False)
+        )
+        (conv1_ts): Linear(in_features=100, out_features=400, bias=True)
+        (conv2_ts): Linear(in_features=400, out_features=100, bias=True)
+        (dropout_ts): Dropout(p=0.1, inplace=False)
+        (layer_norm11): LayerNorm((100,), eps=1e-05, elementwise_affine=True)
+        (layer_norm12): LayerNorm((100,), eps=1e-05, elementwise_affine=True)
+        (layer_norm21): LayerNorm((100,), eps=1e-05, elementwise_affine=True)
+        (layer_norm22): LayerNorm((100,), eps=1e-05, elementwise_affine=True)
+      )
+    )
+    (last_layer): last_layer(
+      (query_projection): Linear(in_features=100, out_features=96, bias=True)
+      (key_projection): Linear(in_features=100, out_features=96, bias=True)
+    )
+  )
+  (MLP_x): MLP_bottle(
+    (linear1): Sequential(
+      (0): Linear(in_features=96, out_features=48, bias=True)
+      (1): ReLU()
+      (2): Linear(in_features=48, out_features=48, bias=True)
+    )
+    (linear2): Sequential(
+      (0): Linear(in_features=48, out_features=48, bias=True)
+      (1): ReLU()
+      (2): Linear(in_features=48, out_features=96, bias=True)
+    )
+    (skip): Linear(in_features=96, out_features=48, bias=True)
+    (act): ReLU()
+  )
+  (MLP_y): MLP_bottle(
+    (linear1): Sequential(
+      (0): Linear(in_features=48, out_features=24, bias=True)
+      (1): ReLU()
+      (2): Linear(in_features=24, out_features=24, bias=True)
+    )
+    (linear2): Sequential(
+      (0): Linear(in_features=24, out_features=24, bias=True)
+      (1): ReLU()
+      (2): Linear(in_features=24, out_features=48, bias=True)
+    )
+    (skip): Linear(in_features=48, out_features=24, bias=True)
+    (act): ReLU()
+  )
+  (MLP_sx): MLP_bottle(
+    (linear1): Sequential(
+      (0): Linear(in_features=96, out_features=48, bias=True)
+      (1): ReLU()
+      (2): Linear(in_features=48, out_features=48, bias=True)
+    )
+    (linear2): Sequential(
+      (0): Linear(in_features=48, out_features=48, bias=True)
+      (1): ReLU()
+      (2): Linear(in_features=48, out_features=96, bias=True)
+    )
+    (skip): Linear(in_features=96, out_features=48, bias=True)
+    (act): ReLU()
+  )
+  (MLP_sy): MLP_bottle(
+    (linear1): Sequential(
+      (0): Linear(in_features=48, out_features=24, bias=True)
+      (1): ReLU()
+      (2): Linear(in_features=24, out_features=24, bias=True)
+    )
+    (linear2): Sequential(
+      (0): Linear(in_features=24, out_features=24, bias=True)
+      (1): ReLU()
+      (2): Linear(in_features=24, out_features=48, bias=True)
+    )
+    (skip): Linear(in_features=48, out_features=24, bias=True)
+    (act): ReLU()
+  )
+  (project1): Linear(in_features=96, out_features=100, bias=True)
+  (project2): Linear(in_features=96, out_features=100, bias=True)
+  (project3): Linear(in_features=48, out_features=100, bias=True)
+  (project4): Linear(in_features=48, out_features=100, bias=True)
+  (criterion1): MSELoss()
+  (criterion2): L1Loss()
+  (map_MLP): MLP_bottle(
+    (linear1): Sequential(
+      (0): Linear(in_features=4, out_features=20, bias=True)
+      (1): ReLU()
+      (2): Linear(in_features=20, out_features=20, bias=True)
+    )
+    (linear2): Sequential(
+      (0): Linear(in_features=20, out_features=20, bias=True)
+      (1): ReLU()
+      (2): Linear(in_features=20, out_features=1440, bias=True)
+    )
+    (skip): Linear(in_features=4, out_features=20, bias=True)
+    (act): ReLU()
+  )
+)
+INFO:root:[Info] Number of parameters: 612096
+INFO:root:	iters: 57, epoch: 1 | loss: 3.5082707
+INFO:root:	iters: 114, epoch: 1 | loss: 2.8178611
+INFO:root:	iters: 171, epoch: 1 | loss: 0.8256217
+INFO:root:	iters: 228, epoch: 1 | loss: 1.1126812
+INFO:root:	iters: 285, epoch: 1 | loss: 0.9627166
+INFO:root:Epoch: 1 cost time: 38.88318705558777
+INFO:root:loss_pred:0.9502495969629454
+INFO:root:loss entropy:1.2079784539607605
+INFO:root:loss smooth:0.12758004055309793
+INFO:root:Basisformer(
+  (coefnet): Coefnet(
+    (layers): ModuleList(
+      (0-1): 2 x BCAB(
+        (cross_attention_basis): channel_AutoCorrelationLayer(
+          (query_projection): Linear(in_features=100, out_features=96, bias=True)
+          (key_projection): Linear(in_features=100, out_features=96, bias=True)
+          (value_projection): Linear(in_features=100, out_features=96, bias=True)
+          (out_projection): Linear(in_features=96, out_features=100, bias=True)
+          (attend): Softmax(dim=-1)
+          (dropout): Dropout(p=0.1, inplace=False)
+        )
+        (conv1_basis): Linear(in_features=100, out_features=400, bias=True)
+        (conv2_basis): Linear(in_features=400, out_features=100, bias=True)
+        (dropout_basis): Dropout(p=0.1, inplace=False)
+        (cross_attention_ts): channel_AutoCorrelationLayer(
+          (query_projection): Linear(in_features=100, out_features=96, bias=True)
+          (key_projection): Linear(in_features=100, out_features=96, bias=True)
+          (value_projection): Linear(in_features=100, out_features=96, bias=True)
+          (out_projection): Linear(in_features=96, out_features=100, bias=True)
+          (attend): Softmax(dim=-1)
+          (dropout): Dropout(p=0.1, inplace=False)
+        )
+        (conv1_ts): Linear(in_features=100, out_features=400, bias=True)
+        (conv2_ts): Linear(in_features=400, out_features=100, bias=True)
+        (dropout_ts): Dropout(p=0.1, inplace=False)
+        (layer_norm11): LayerNorm((100,), eps=1e-05, elementwise_affine=True)
+        (layer_norm12): LayerNorm((100,), eps=1e-05, elementwise_affine=True)
+        (layer_norm21): LayerNorm((100,), eps=1e-05, elementwise_affine=True)
+        (layer_norm22): LayerNorm((100,), eps=1e-05, elementwise_affine=True)
+      )
+    )
+    (last_layer): last_layer(
+      (query_projection): Linear(in_features=100, out_features=96, bias=True)
+      (key_projection): Linear(in_features=100, out_features=96, bias=True)
+    )
+  )
+  (MLP_x): MLP_bottle(
+    (linear1): Sequential(
+      (0): Linear(in_features=96, out_features=48, bias=True)
+      (1): ReLU()
+      (2): Linear(in_features=48, out_features=48, bias=True)
+    )
+    (linear2): Sequential(
+      (0): Linear(in_features=48, out_features=48, bias=True)
+      (1): ReLU()
+      (2): Linear(in_features=48, out_features=96, bias=True)
+    )
+    (skip): Linear(in_features=96, out_features=48, bias=True)
+    (act): ReLU()
+  )
+  (MLP_y): MLP_bottle(
+    (linear1): Sequential(
+      (0): Linear(in_features=48, out_features=24, bias=True)
+      (1): ReLU()
+      (2): Linear(in_features=24, out_features=24, bias=True)
+    )
+    (linear2): Sequential(
+      (0): Linear(in_features=24, out_features=24, bias=True)
+      (1): ReLU()
+      (2): Linear(in_features=24, out_features=48, bias=True)
+    )
+    (skip): Linear(in_features=48, out_features=24, bias=True)
+    (act): ReLU()
+  )
+  (MLP_sx): MLP_bottle(
+    (linear1): Sequential(
+      (0): Linear(in_features=96, out_features=48, bias=True)
+      (1): ReLU()
+      (2): Linear(in_features=48, out_features=48, bias=True)
+    )
+    (linear2): Sequential(
+      (0): Linear(in_features=48, out_features=48, bias=True)
+      (1): ReLU()
+      (2): Linear(in_features=48, out_features=96, bias=True)
+    )
+    (skip): Linear(in_features=96, out_features=48, bias=True)
+    (act): ReLU()
+  )
+  (MLP_sy): MLP_bottle(
+    (linear1): Sequential(
+      (0): Linear(in_features=48, out_features=24, bias=True)
+      (1): ReLU()
+      (2): Linear(in_features=24, out_features=24, bias=True)
+    )
+    (linear2): Sequential(
+      (0): Linear(in_features=24, out_features=24, bias=True)
+      (1): ReLU()
+      (2): Linear(in_features=24, out_features=48, bias=True)
+    )
+    (skip): Linear(in_features=48, out_features=24, bias=True)
+    (act): ReLU()
+  )
+  (project1): Linear(in_features=96, out_features=100, bias=True)
+  (project2): Linear(in_features=96, out_features=100, bias=True)
+  (project3): Linear(in_features=48, out_features=100, bias=True)
+  (project4): Linear(in_features=48, out_features=100, bias=True)
+  (criterion1): MSELoss()
+  (criterion2): L1Loss()
+  (map_MLP): MLP_bottle(
+    (linear1): Sequential(
+      (0): Linear(in_features=4, out_features=20, bias=True)
+      (1): ReLU()
+      (2): Linear(in_features=20, out_features=20, bias=True)
+    )
+    (linear2): Sequential(
+      (0): Linear(in_features=20, out_features=20, bias=True)
+      (1): ReLU()
+      (2): Linear(in_features=20, out_features=1440, bias=True)
+    )
+    (skip): Linear(in_features=4, out_features=20, bias=True)
+    (act): ReLU()
+  )
+)

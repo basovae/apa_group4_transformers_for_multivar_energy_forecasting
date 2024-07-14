@@ -1,4 +1,8 @@
-from utils import Coefnet,MLP_bottle
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import torch.nn.utils.weight_norm as wn
+from Basisformer.utils import Coefnet, MLP_bottle
 
 
 # The Basisformer model integrates all the components to perform time series forecasting.
