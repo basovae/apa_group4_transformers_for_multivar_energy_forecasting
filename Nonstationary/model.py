@@ -1,8 +1,8 @@
 import torch
 import torch.nn as nn
-from Nonstationary.ns_layers.Transformer_EncDec import Decoder, DecoderLayer, Encoder, EncoderLayer
-from Nonstationary.ns_layers.SelfAttention_Family import DSAttention, AttentionLayer
-from Nonstationary.layers.Embed import DataEmbedding
+from ns_layers.AutoCorrelation import DSAutoCorrelation, AutoCorrelationLayer
+from ns_layers.Autoformer_EncDec import Encoder, Decoder, EncoderLayer, DecoderLayer, my_Layernorm, series_decomp
+from layers.Embed import DataEmbedding_wo_pos
 
 
 class Projector(nn.Module):
@@ -36,58 +36,73 @@ class Projector(nn.Module):
 
 class Model(nn.Module):
     """
-    Non-stationary Transformer
+    Autoformer is the first method to achieve the series-wise connection,
+    with inherent O(LlogL) complexity
     """
     def __init__(self, configs):
         super(Model, self).__init__()
-        self.pred_len = configs.pred_len
         self.seq_len = configs.seq_len
         self.label_len = configs.label_len
+        self.pred_len = configs.pred_len
         self.output_attention = configs.output_attention
 
+        # Decomp
+        kernel_size = configs.moving_avg
+        self.decomp = series_decomp(kernel_size)
+
         # Embedding
-        self.enc_embedding = DataEmbedding(configs.enc_in, configs.d_model, configs.embed, configs.freq,
-                                           configs.dropout)
-        self.dec_embedding = DataEmbedding(configs.dec_in, configs.d_model, configs.embed, configs.freq,
-                                           configs.dropout)
+        # The series-wise connection inherently contains the sequential information.
+        # Thus, we can discard the position embedding of transformers.
+        self.enc_embedding = DataEmbedding_wo_pos(configs.enc_in, configs.d_model, configs.embed, configs.freq,
+                                                  configs.dropout)
+        self.dec_embedding = DataEmbedding_wo_pos(configs.dec_in, configs.d_model, configs.embed, configs.freq,
+                                                  configs.dropout)
+
         # Encoder
         self.encoder = Encoder(
             [
                 EncoderLayer(
-                    AttentionLayer(
-                        DSAttention(False, configs.factor, attention_dropout=configs.dropout,
-                                      output_attention=configs.output_attention), configs.d_model, configs.n_heads),
+                    AutoCorrelationLayer(
+                        DSAutoCorrelation(False, configs.factor, attention_dropout=configs.dropout,
+                                        output_attention=configs.output_attention),
+                        configs.d_model, configs.n_heads),
                     configs.d_model,
                     configs.d_ff,
+                    moving_avg=configs.moving_avg,
                     dropout=configs.dropout,
                     activation=configs.activation
                 ) for l in range(configs.e_layers)
             ],
-            norm_layer=torch.nn.LayerNorm(configs.d_model)
+            norm_layer=my_Layernorm(configs.d_model)
         )
         # Decoder
         self.decoder = Decoder(
             [
                 DecoderLayer(
-                    AttentionLayer(
-                        DSAttention(True, configs.factor, attention_dropout=configs.dropout, output_attention=False),
+                    AutoCorrelationLayer(
+                        DSAutoCorrelation(True, configs.factor, attention_dropout=configs.dropout,
+                                        output_attention=False),
                         configs.d_model, configs.n_heads),
-                    AttentionLayer(
-                        DSAttention(False, configs.factor, attention_dropout=configs.dropout, output_attention=False),
+                    AutoCorrelationLayer(
+                        DSAutoCorrelation(False, configs.factor, attention_dropout=configs.dropout,
+                                        output_attention=False),
                         configs.d_model, configs.n_heads),
                     configs.d_model,
+                    configs.c_out,
                     configs.d_ff,
+                    moving_avg=configs.moving_avg,
                     dropout=configs.dropout,
                     activation=configs.activation,
                 )
                 for l in range(configs.d_layers)
             ],
-            norm_layer=torch.nn.LayerNorm(configs.d_model),
+            norm_layer=my_Layernorm(configs.d_model),
             projection=nn.Linear(configs.d_model, configs.c_out, bias=True)
         )
-
+        
         self.tau_learner   = Projector(enc_in=configs.enc_in, seq_len=configs.seq_len, hidden_dims=configs.p_hidden_dims, hidden_layers=configs.p_hidden_layers, output_dim=1)
         self.delta_learner = Projector(enc_in=configs.enc_in, seq_len=configs.seq_len, hidden_dims=configs.p_hidden_dims, hidden_layers=configs.p_hidden_layers, output_dim=configs.seq_len)
+
 
     def forward(self, x_enc, x_mark_enc, x_dec, x_mark_dec,
                 enc_self_mask=None, dec_self_mask=None, dec_enc_mask=None):
@@ -105,11 +120,23 @@ class Model(nn.Module):
         delta = self.delta_learner(x_raw, mean_enc)      # B x S x E, B x 1 x E -> B x S
 
         # Model Inference
+
+        # decomp init
+        mean = torch.mean(x_enc, dim=1).unsqueeze(1).repeat(1, self.pred_len, 1)
+        zeros = torch.zeros([x_dec_new.shape[0], self.pred_len, x_dec_new.shape[2]], device=x_enc.device)
+        seasonal_init, trend_init = self.decomp(x_enc)
+        # decoder input
+        trend_init = torch.cat([trend_init[:, -self.label_len:, :], mean], dim=1)
+        seasonal_init = torch.cat([seasonal_init[:, -self.label_len:, :], zeros], dim=1)
+        # enc
         enc_out = self.enc_embedding(x_enc, x_mark_enc)
         enc_out, attns = self.encoder(enc_out, attn_mask=enc_self_mask, tau=tau, delta=delta)
-
-        dec_out = self.dec_embedding(x_dec_new, x_mark_dec)
-        dec_out = self.decoder(dec_out, enc_out, x_mask=dec_self_mask, cross_mask=dec_enc_mask, tau=tau, delta=delta)
+        # dec
+        dec_out = self.dec_embedding(seasonal_init, x_mark_dec)
+        seasonal_part, trend_part = self.decoder(dec_out, enc_out, x_mask=dec_self_mask, cross_mask=dec_enc_mask,
+                                                 trend=trend_init, tau=tau, delta=None)
+        # final
+        dec_out = trend_part + seasonal_part
 
         # De-normalization
         dec_out = dec_out * std_enc + mean_enc

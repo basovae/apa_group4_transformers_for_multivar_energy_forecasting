@@ -52,30 +52,40 @@ class Basisformer(nn.Module):
 
         # initializing basis function
         # MLP maps input to a higher dim space
-        self.map_MLP = MLP_bottle(4, # input dim
+        self.map_MLP = MLP_bottle(1, # input dim
                                   self.N*(self.seq_len+self.pred_len), #output dim
                                   map_bottleneck, # hidden layer size for the MLP
                                   bias=True)
         self.tau = tau # temperature parameter
         self.epsilon = 1E-5 # to avoid deletion by zero
 
-    def forward(self,x,mark,y=None,train=True,y_mark=None):
+
+    def forward(self,x,mark,y,train=True,y_mark=None):
         # normalization
         mean_x = x.mean(dim=1,keepdim=True)
         std_x = x.std(dim=1,keepdim=True)
         feature = (x - mean_x) / (std_x + self.epsilon)
         # reshaping
         B,L,C = feature.shape               # batch size, seq length, number of features
+
         feature = feature.permute(0,2,1)    # changing order of dimentions
         feature = self.project1(feature)    # (B,C,d)
                                             # linear transforrmation defined as wn(nn.Linear(seq_len, d_model))
+        
+        # handle both 1D and 2D mark tensors
+        #if mark.dim() == 1:
+        # mark = mark.unsqueeze(1)  # new dimension to make it 2D
+    
+        #m = self.map_MLP(mark[:, 0].unsqueeze(1))
+        #m = m.reshape(B, self.seq_len + self.pred_len, self.N)
 
         # creating basis function
         m = self.map_MLP(           # maps the input marker to a higher-dimensional space
            mark[:, 0].unsqueeze(1)  # selects the first marker and reshapes it for the MLP;
                                     # unsqueeze adds new dim at position in ()
-                        ).reshape(B,self.seq_len + self.pred_len,self.N) #reshapes the output to have other dimensions
-
+        ##### This implies that the model expects mark to be a 2D tensor, 
+        ##### but it's receiving a 1D tensor.
+                      ).reshape(B,self.seq_len + self.pred_len,self.N) #reshapes the output to have other dimensions
 
         # normalization
         m = m / torch.sqrt(torch.sum(m**2,dim=1,keepdim=True)+self.epsilon)
