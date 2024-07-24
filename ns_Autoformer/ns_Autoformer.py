@@ -1,8 +1,8 @@
 import torch
 import torch.nn as nn
-from Nonstationary.ns_layers.AutoCorrelation import DSAutoCorrelation, AutoCorrelationLayer
-from Nonstationary.ns_layers.Autoformer_EncDec import Encoder, Decoder, EncoderLayer, DecoderLayer, my_Layernorm, series_decomp
-from Nonstationary.layers.Embed import DataEmbedding_wo_pos
+from ns_Autoformer.ns_layers.AutoCorrelation import DSAutoCorrelation, AutoCorrelationLayer
+from ns_Autoformer.ns_layers.Autoformer_EncDec import Encoder, Decoder, EncoderLayer, DecoderLayer, my_Layernorm, series_decomp
+from ns_Autoformer.layers.Embed import DataEmbedding_wo_pos
 
 
 class Projector(nn.Module):
