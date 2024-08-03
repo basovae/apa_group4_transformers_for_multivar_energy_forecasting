@@ -1,0 +1,9 @@
+iTransformer_train_iTransformer_all_countries_M_ft96_sl48_ll48_pl512_dm8_nh2_el1_dl2048_df1_fctimeF_ebTrue_dttest_0  
+mse:0.6475687623023987, mae:0.5843679904937744
+
+iTransformer_train_iTransformer_all_countries_M_ft96_sl48_ll48_pl512_dm8_nh2_el1_dl2048_df1_fctimeF_ebTrue_dttest_0  
+mse:0.6345080733299255, mae:0.5737337470054626
+
+iTransformer_train_iTransformer_all_countries_M_ft96_sl48_ll48_pl512_dm8_nh2_el1_dl2048_df1_fctimeF_ebTrue_dttest_0  
+mse:1.2239457368850708, mae:0.7908962965011597
+
