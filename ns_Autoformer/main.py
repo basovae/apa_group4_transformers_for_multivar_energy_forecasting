@@ -84,26 +84,26 @@ def parse_args():
     args, _ = parser.parse_known_args()
     return args
 
-args = parse_args()
+#args = parse_args()
 
-args.use_gpu = True if torch.cuda.is_available() and args.use_gpu else False
+# args.use_gpu = True if torch.cuda.is_available() and args.use_gpu else False
 
-fix_seed = args.seed
-random.seed(fix_seed)
-torch.manual_seed(fix_seed)
-np.random.seed(fix_seed)
+# fix_seed = args.seed
+# random.seed(fix_seed)
+# torch.manual_seed(fix_seed)
+# np.random.seed(fix_seed)
 
-if args.use_gpu:
-    if args.use_multi_gpu:
-        args.devices = args.devices.replace(' ', '')
-        device_ids = args.devices.split(',')
-        args.device_ids = [int(id_) for id_ in device_ids]
-        args.gpu = args.device_ids[0]
-    else:
-        torch.cuda.set_device(args.gpu)
+# if args.use_gpu:
+#     if args.use_multi_gpu:
+#         args.devices = args.devices.replace(' ', '')
+#         device_ids = args.devices.split(',')
+#         args.device_ids = [int(id_) for id_ in device_ids]
+#         args.gpu = args.device_ids[0]
+#     else:
+#         torch.cuda.set_device(args.gpu)
 
-print('Args in experiment:')
-print(args)
+# print('Args in experiment:')
+# print(args)
 
 class Exp_Basic(object):
     def __init__(self, args):
