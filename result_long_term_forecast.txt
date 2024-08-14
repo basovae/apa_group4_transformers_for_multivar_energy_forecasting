@@ -13,3 +13,6 @@ mse:1.3615845441818237, mae:0.847229540348053
 iTransformer_train_iTransformer_all_countries_M_ft96_sl48_ll48_pl512_dm8_nh2_el1_dl2048_df1_fctimeF_ebTrue_dttest_0  
 mse:1.2623029947280884, mae:0.8087429404258728
 
+iTransformer_train_iTransformer_all_countries_M_ft96_sl48_ll48_pl512_dm8_nh2_el1_dl2048_df1_fctimeF_ebTrue_dttest_0  
+mse:1.3681683540344238, mae:0.8919330835342407
+

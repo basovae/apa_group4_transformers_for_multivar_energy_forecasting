@@ -50,7 +50,7 @@ def model_setup(args, device):
 
 def train(model, train_loader, args, device, record_dir):
     num_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-    log_and_print('[Info] Number of parameters: {}'.format(num_params))
+    ##log_and_print('[Info] Number of parameters: {}'.format(num_params))
     
     para1 = [param for name, param in model.named_parameters() if 'map_MLP' in name]
     para2 = [param for name, param in model.named_parameters() if 'map_MLP' not in name]
