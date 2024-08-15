@@ -41,6 +41,7 @@ class Basisformer(nn.Module):
         self.criterion2 = nn.L1Loss(reduction='none')
 
         self.device = device # setting the device (CPU or GPU)
+        self.scaler = None
 
         # smooth array
         arr = torch.zeros((seq_len+pred_len-2,seq_len+pred_len))
@@ -107,8 +108,6 @@ class Basisformer(nn.Module):
         base = self.MLP_y(raw_m2).reshape(B,self.N,self.k,-1).permute(0,2,1,3)   #(B,k,N,L/k)
         out = torch.matmul(score,base).permute(0,2,1,3).reshape(B,C,-1)  #(B,C,k * (L/k))
         out = self.MLP_sy(out).reshape(B,C,-1).permute(0,2,1)   #（BC,L）
-
-
 
         # reverse normalization
         output = out * (std_x + self.epsilon) + mean_x

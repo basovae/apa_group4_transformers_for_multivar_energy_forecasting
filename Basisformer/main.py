@@ -5,6 +5,7 @@ import os
 import logging
 import numpy as np
 import time
+import matplotlib.pyplot as plt
 from adabelief_pytorch import AdaBelief
 from Basisformer.model import Basisformer  # Ensure the correct import path
 from Basisformer.evaluate_tool import metric
@@ -14,32 +15,35 @@ def log_and_print(message):
     logging.info(message)
     print(message)
 
+def ensure_dir(directory):
+    if not os.path.exists(directory):
+        os.makedirs(directory)
 
 def parse_args():
         parser = argparse.ArgumentParser(description='Time series prediction - Basisformer')
         parser.add_argument('--is_training', type=bool, default=True, help='train or test')
         parser.add_argument('--data_path', type=str, default='data', help='root path of the data file')
         parser.add_argument('--device', type=int, default=0, help='gpu device')
-        parser.add_argument('--num_workers', type=int, default=0, help='data loader num workers')
+        parser.add_argument('--num_workers', type=int, default=10, help='data loader num workers')
         parser.add_argument('--features', type=str, default='M', help='forecasting task')
         parser.add_argument('--freq', type=str, default='h', help='freq for time features encoding')
         parser.add_argument('--seq_len', type=int, default=96, help='input sequence length')
         parser.add_argument('--pred_len', type=int, default=48, help='prediction sequence length')
         parser.add_argument('--heads', type=int, default=16, help='head in attention')
-        parser.add_argument('--d_model', type=int, default=100, help='dimension of model')
+        parser.add_argument('--d_model', type=int, default=512, help='dimension of model')
         parser.add_argument('--N', type=int, default=10, help='number of learnable basis')
         parser.add_argument('--block_nums', type=int, default=2, help='number of blocks')
         parser.add_argument('--bottleneck', type=int, default=2, help='reduction of bottleneck')
         parser.add_argument('--map_bottleneck', type=int, default=20, help='reduction of mapping bottleneck')
-        parser.add_argument('--train_epochs', type=int, default=1, help='train epochs')
+        parser.add_argument('--train_epochs', type=int, default=20, help='train epochs')
         parser.add_argument('--batch_size', type=int, default=24 , help='batch size of train input data')
-        parser.add_argument('--learning_rate', type=float, default=5e-4, help='optimizer learning rate')
+        parser.add_argument('--learning_rate', type=float, default=0.0001, help='optimizer learning rate')
         parser.add_argument('--tau', type=float, default=0.07, help='temperature of infonce loss')
         parser.add_argument('--loss_weight_prediction', type=float, default=1.0, help='weight of prediction loss')
         parser.add_argument('--loss_weight_infonce', type=float, default=1.0, help='weight of infonce loss')
         parser.add_argument('--loss_weight_smooth', type=float, default=1.0, help='weight of smooth loss')
         parser.add_argument('--check_point', type=str, default='checkpoint', help='check point path, relative path')
-        parser.add_argument('--patience', type=int, default=5, help='early stopping patience')
+        parser.add_argument('--patience', type=int, default=3, help='early stopping patience')
         args, _ = parser.parse_known_args()
         return args
 
@@ -47,6 +51,7 @@ def model_setup(args, device):
     model = Basisformer(args.seq_len, args.pred_len, args.d_model, args.heads, args.N, 
                         args.block_nums, args.bottleneck, args.map_bottleneck, device, args.tau)
     return model.to(device)
+
 
 def train(model, train_loader, args, device, record_dir):
     num_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
@@ -113,6 +118,12 @@ def train(model, train_loader, args, device, record_dir):
         log_and_print("Epoch: {0} | Train Loss: {1:.7f}".format(epoch + 1, train_loss))
 
         fig = plot_seq_feature(outputs, batch_y, batch_x)
+        plots_dir = os.path.join(record_dir, 'train_plots')
+        ensure_dir(plots_dir)
+        
+        # Save the plot
+        plt.savefig(os.path.join(plots_dir, f'train_plot_epoch_{epoch}.png'))
+        plt.close(fig)
         #writer.add_figure("figure_train", fig, global_step=epoch)
         #writer.add_scalar('train_loss', train_loss, global_step=epoch)
         
@@ -143,6 +154,10 @@ def test(model, test_loader, args, device, record_dir):
 
     model.eval()
     t1 = time.time()
+
+    test_plots_dir = os.path.join(record_dir, 'test_plots')
+    ensure_dir(test_plots_dir)
+
     with torch.no_grad():
 ############################## Specific to Basisformer (index) ###################################
         for i, (batch_x, batch_y, batch_x_mark, batch_y_mark, index) in enumerate(test_loader):
@@ -157,6 +172,10 @@ def test(model, test_loader, args, device, record_dir):
                 
             outputs = outputs.detach().cpu().numpy()
             batch_y = batch_y.detach().cpu().numpy()
+
+            fig = plot_seq_feature(outputs, batch_y, batch_x, label=f"test_batch_{i}")
+            plt.savefig(os.path.join(test_plots_dir, f'test_plot_batch_{i}.png'))
+            plt.close(fig)
             
     
             preds.append(outputs)
@@ -176,4 +195,5 @@ def test(model, test_loader, args, device, record_dir):
 
     mae, mse, rmse, mape, mspe = metric(preds, trues)
     log_and_print('mse:{}, mae:{}, mape:{}, rmse:{}'.format(mse, mae, mape, rmse))
+
     return 
