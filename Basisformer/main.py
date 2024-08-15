@@ -175,5 +175,5 @@ def test(model, test_loader, args, device, record_dir):
     trues = trues.reshape(-1, trues.shape[-2], trues.shape[-1])
 
     mae, mse, rmse, mape, mspe = metric(preds, trues)
-    log_and_print('mse:{}, mae:{}'.format(mse, mae))
+    log_and_print('mse:{}, mae:{}, mape:{}, rmse:{}'.format(mse, mae, mape, rmse))
     return 

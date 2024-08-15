@@ -4,3 +4,6 @@ mse:1.4536995887756348, mae:0.9043340086936951
 ns_autoformer_train_ns_Autoformer_M_ft96_sl48_ll48_pl512_dm8_nh2_el1_dl2048_df1_fctimeF_ebTrue_dttest_0  
 mse:1.9195966720581055, mae:1.0706748962402344
 
+ns_autoformer_train_ns_Autoformer_M_ft96_sl48_ll48_pl512_dm8_nh2_el1_dl2048_df1_fctimeF_ebTrue_dttest_0  
+mse:1.8432890176773071, mae:1.0441322326660156, mape6.022145748138428, rmse1.3576778173446655
+
