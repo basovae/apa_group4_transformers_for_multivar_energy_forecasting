@@ -14,6 +14,10 @@ from ns_Autoformer import ns_Autoformer
 
 warnings.filterwarnings('ignore')
 
+def log_and_print(message):
+    logging.info(message)
+    print(message)
+
 def parse_args():
     parser = argparse.ArgumentParser(description='Non-stationary Transformers for Time Series Forecasting')
 
@@ -317,10 +321,10 @@ class Exp_Main(Exp_Basic):
             os.makedirs(folder_path)
 
         mae, mse, rmse, mape, mspe = metric(preds, trues)
-        print('mse:{}, mae:{}'.format(mse, mae))
+        print('mse:{}, mae:{}, mape{}, rmse{}'.format(mse, mae, mape, rmse))
         f = open("result.txt", 'a')
         f.write(setting + "  \n")
-        f.write('mse:{}, mae:{}'.format(mse, mae))
+        f.write('mse:{}, mae:{}, mape{}, rmse{}'.format(mse, mae, mape, rmse))
         f.write('\n')
         f.write('\n')
         f.close()
