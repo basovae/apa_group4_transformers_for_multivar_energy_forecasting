@@ -22,9 +22,3 @@ mse:1.2126866579055786, mae:0.8379350900650024, mape4.928677558898926, rmse1.101
 iTransformer_train_iTransformer_all_countries_M_ft96_sl48_ll48_pl512_dm8_nh2_el1_dl2048_df1_fctimeF_ebTrue_dttest_0  
 mse:1.2841802835464478, mae:0.859301745891571, mape6.035584449768066, rmse1.1332167387008667
 
-iTransformer_train_iTransformer_all_countries_M_ft96_sl48_ll48_pl512_dm8_nh2_el1_dl2048_df1_fctimeF_ebTrue_dttest_0  
-mse:0.020070677623152733, mae:0.09880538284778595, mapeinf, rmse0.14167101681232452
-
-iTransformer_train_iTransformer_all_countries_M_ft96_sl48_ll48_pl512_dm8_nh2_el1_dl2048_df1_fctimeF_ebTrue_dttest_0  
-mse:0.019637467339634895, mae:0.0976279154419899, mapeinf, rmse0.14013375341892242
-
