@@ -1,9 +1,9 @@
-torch==2.0.1
-numpy==1.23.5
-matplotlib==3.5.3
-adabelief_pytorch==0.2.1
-pandas==1.3.5
+torch==2.3.0
 scikit-learn==1.3.0
-tensorboard
-mkl
-seaborn
+pandas==2.2.2
+numpy==1.26.4
+tensorflow==2.17.0
+matplotlib==3.9.0
+chronos[training] @ git+https://github.com/amazon-science/chronos-forecasting.git
+pyarrow==16.1.0
+causalnex==0.12.0

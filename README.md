@@ -10,31 +10,35 @@
 
 - [Summary](#summary)
 - [Working with the repo](#Working-with-the-repo)
-    - [Dependencies](#Dependencies)
-    - [Setup](#Setup)
+  - [Dependencies](#Dependencies)
+  - [Setup](#Setup)
 - [Reproducing results](#Reproducing-results)
-    - [Training code](#Training-code)
-    - [Evaluation code](#Evaluation-code)
-    - [Pretrained models](#Pretrained-models)
+  - [Training code](#Training-code)
+  - [Pretrained models](#Pretrained-models)
 - [Results](#Results)
 - [Project structure](-Project-structure)
 
 ## Summary
+
 Empirical evaluation of recently published transformer-based models for multivariate energy time series forecasting.
 
 ## Working with the repo
+
 Python version - 3.12.2
+
 ### Setup
 
 1. Clone this repository
 
 2. Create an virtual environment and activate it
+
 ```bash
 python -m venv transf_mv_forecast
 source transf_mv_forecast/bin/activate
 ```
 
 3. Install requirements
+
 ```bash
 pip install --upgrade pip
 pip install -r requirements.txt
@@ -42,35 +46,56 @@ pip install -r requirements.txt
 
 ## Reproducing results
 
-Describe steps how to reproduce your results.
-
+To reproduce the results please clone the repository, insert data file into data folder, install the requirements and run the notebook code.
 
 ### Training code
 
-Does a repository contain a way to train/fit the model(s) described in the paper?
-
+Main files of transformer based models are called using an unification code.
 
 ### Pretrained models
 
-Does a repository provide free access to pretrained model weights?
+The only pre trained model used in the analysis is Chronos.
 
 ## Results
 
-Does a repository contain a table/plot of main results and a script to reproduce those results?
+**Model** **RMSE**
+
+0 Linear Regression 12.29
+1 LSTM 14.85
+2 Chronos 33.28
+3 Nonstationary Autoformer 0.14
+4 Basisformer 0.15
+5 iTransformer 0.12
 
 ## Project structure
 
-(Here is an example from SMART_HOME_N_ENERGY, [Appliance Level Load Prediction](https://github.com/Humboldt-WI/dissertations/tree/main/SMART_HOME_N_ENERGY/Appliance%20Level%20Load%20Prediction) dissertation)
-
 ```bash
+├── Basisformer                                     -- Basisformer model files
+    ├── records                                     -- error metrics from trial different runs
+    ├── evaluate_tool.py                            -- code for defining evaluation metrics
+    ├── main.py                                     -- code for train, test and arguments
+    ├── pyplot.py                                   -- code for plotting functions
+    └── utils.py                                    -- supporting functions
+├── checkpoints                                     -- iTransformer and nsAutoformer checkpoints
+├── data                                            -- empty folder, insert data file there
+├── iTransformer                                    -- iTransformer model files
+    ├── records                                     -- error metrics from trial different runs
+    ├── evaluate_tool.py                            -- code for defining evaluation metrics
+    ├── main.py                                     -- code for train, test and arguments
+    ├── pyplot.py                                   -- code for plotting functions
+    └── utils.py                                    -- supporting functions
+├── ns_Autoformer                                   -- nsAutoformer model files
+    ├── records                                     -- error metrics from trial different runs
+    ├── evaluate_tool.py                            -- code for defining evaluation metrics
+    ├── main.py                                     -- code for train, test and arguments
+    ├── pyplot.py                                   -- code for plotting functions
+    └── utils.py                                    -- supporting functions
+├── records                                         -- Basisformer plots and results
+├── results                                         -- iTransformer and nsAutoformer train results
+├── supporting_files_chronos                        -- synthetic data simulation supporting functions
+├── supporting_files_dynotears                      -- causal graph supporting visualisations files
+├── results                                         -- iTransformer and nsAutoformer test results
+├── Notebook.ipynb                                  -- notebook file
 ├── README.md
-├── requirements.txt                                -- required libraries
-├── data                                            -- stores csv file 
-├── Basisformer                                     -- model files for Basiformer model ()
-└── src
-    ├── prepare_source_data.ipynb                   -- preprocesses data
-    ├── data_preparation.ipynb                      -- preparing datasets
-    ├── model_tuning.ipynb                          -- tuning functions
-    └── run_experiment.ipynb                        -- run experiments 
-    └── plots                                       -- plotting functions                 
+└── requirements.txt                                -- required libraries
 ```
