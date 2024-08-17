@@ -4,21 +4,6 @@ import torch
 import torch.nn.functional as F
 import numpy as np
 
-####################################
-# In PyTorch, all neural network models and layers are subclasses of torch.nn.Module.
-# The <Module> class is the base class for all neural network modules,
-# and it provides a blueprint for defining custom layers and models.
-
-# The <forward> method defines the forward pass of the network,
-# which is the process of passing input data through the layers of the network to compute the output.
-# This is where the actual computation (such as matrix multiplication, activation functions, etc.) is defined.
-####################################
-
-
-
-#This class defines a two-layer MLP with a skip connection and ReLU activations.
-#It reduces the input dimension, processes it, and then expands it back
-
 class MLP(nn.Module):
     def __init__(self,input_len,output_len):
         super().__init__()
@@ -69,9 +54,6 @@ class MLP_bottle(nn.Module):
 
 
 
-#This layer calculates the attention scores between queries, keys, and values using multi-head attention.
-#This class implements multi-head attention using linear projections and softmax to compute attention score
-#It is essential for capturing dependencies between different parts of the input sequence.
 
 class channel_AutoCorrelationLayer(nn.Module):
     def __init__(self,d_model,n_heads, mask=False,d_keys=None,
@@ -137,9 +119,6 @@ class channel_AutoCorrelationLayer(nn.Module):
 
 
 
-# BCAB combines attention mechanisms and feed-forward networks to process both the basis functions and the input time series
-# BCAB applies cross-attention to both the basis functions and the time series,
-# followed by feed-forward networks and normalization.
 
 class BCAB(nn.Module):
     def __init__(self, d_model,heads=8,index=0,d_ff=None,
@@ -200,11 +179,6 @@ class BCAB(nn.Module):
 
 
 
-#The Coefnet applies multiple BCABs to process the input and extract coefficients
-#that represent the importance of different basis functions.
-#This class defines a network of BCABs and a final layer to compute the coefficients
-#representing the contribution of each basis function.
-
 
 class Coefnet(nn.Module):
     def __init__(self, blocks,d_model,heads,norm_layer=None, projection=None):
@@ -229,10 +203,6 @@ class Coefnet(nn.Module):
         return coef,attns1,attns2
 
 
-
-
-
-# The LastLayer computes the final attention scores between the processed series and the basis functions.
 
 class last_layer(nn.Module):
     def __init__(self,d_model,n_heads, mask=False,d_keys=None,
