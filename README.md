@@ -61,7 +61,7 @@ The only pre trained model used in the analysis is Chronos.
 **Model** **RMSE**
 
 0 Linear Regression 12.29
-1 LSTM 14.85
+1 LSTM 14.72
 2 Chronos 33.28
 3 Nonstationary Autoformer 0.14
 4 Basisformer 0.15
@@ -85,11 +85,11 @@ The only pre trained model used in the analysis is Chronos.
     ├── pyplot.py                                   -- code for plotting functions
     └── utils.py                                    -- supporting functions
 ├── ns_Autoformer                                   -- nsAutoformer model files
-    ├── records                                     -- error metrics from trial different runs
-    ├── evaluate_tool.py                            -- code for defining evaluation metrics
+    ├── layers                                      -- python files for encoder-decoder, embedding and attention
+    ├── ns_layers                                   -- python files for nonstationary encoder-decoder, embedding and attention
+    ├── utils                                       -- supporting functions
     ├── main.py                                     -- code for train, test and arguments
-    ├── pyplot.py                                   -- code for plotting functions
-    └── utils.py                                    -- supporting functions
+    └── ns_Autoformer.py                            -- code for nonstationary autoformer model
 ├── records                                         -- Basisformer plots and results
 ├── results                                         -- iTransformer and nsAutoformer train results
 ├── supporting_files_chronos                        -- synthetic data simulation supporting functions
