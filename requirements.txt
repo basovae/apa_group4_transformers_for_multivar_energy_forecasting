@@ -8,3 +8,4 @@ chronos[training] @ git+https://github.com/amazon-science/chronos-forecasting.gi
 pyarrow==16.1.0
 causalnex==0.12.0
 gluonts
+statsmodels==0.14.2
