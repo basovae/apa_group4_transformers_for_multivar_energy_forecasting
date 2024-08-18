@@ -21,12 +21,6 @@
 
 Empirical evaluation of recently published transformer-based models for multivariate energy price time series forecasting.
 
-The study examines four transformer models—Chronos, Basisformer, iTransformer, and Non-stationary Transformers—using European Wholesale Electricity Prices data, comparing their performance with traditional models like linear regression and Long Short-Term Memory (LSTM) networks.
-
-Through data preprocessing, model implementation, and performance benchmarking, the research reveals that iTransformer excels in both short and long-term forecasts, while Basisformer consistently delivers accurate results across different forecast horizons. In contrast, Chronos struggles with seasonality, leading to weaker performance.
-
-The research suggests future enhancements through data augmentation techniques, such as synthetic data generation using Gaussian processes, and advanced causal modeling frameworks like DYNOTEARS.
-
 ## Working with the repo
 
 Python version - 3.12.2
@@ -59,7 +53,13 @@ Main files of transformer based models are called using an unification code.
 
 ## Results
 
-![results](/result.png)
+![results](/results.png)
+
+The study examines four transformer models—Chronos, Basisformer, iTransformer, and Non-stationary Transformers—using European Wholesale Electricity Prices data, comparing their performance with traditional models like linear regression and Long Short-Term Memory (LSTM) networks.
+
+The research reveals that iTransformer excels in both short and long-term forecasts, while Basisformer consistently delivers accurate results across different forecast horizons. In contrast, Chronos struggles with seasonality, leading to weaker performance.
+
+The research suggests future enhancements through data augmentation techniques.
 
 ## Project structure
 
