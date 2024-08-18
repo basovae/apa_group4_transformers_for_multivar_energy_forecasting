@@ -7,3 +7,4 @@ matplotlib==3.9.0
 chronos[training] @ git+https://github.com/amazon-science/chronos-forecasting.git
 pyarrow==16.1.0
 causalnex==0.12.0
+gluonts
