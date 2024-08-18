@@ -1,4 +1,4 @@
-# Transformers For Multivariate Energy Forecast
+# Transformers For Multivariate Energy Price Forecasting
 
 **Type:** Seminar Paper
 
@@ -13,7 +13,6 @@
   - [Dependencies](#Dependencies)
   - [Setup](#Setup)
 - [Reproducing results](#Reproducing-results)
-  - [Training code](#Training-code)
 - [Results](#Results)
 - [Project structure](-Project-structure)
 
@@ -47,9 +46,9 @@ pip install -r requirements.txt
 
 To reproduce the results, clone the repository, paste the data file into the data folder, install the requirements and run the notebook code.
 
-### Training code
+The data file can be found under following link: [Google Drive](https://drive.google.com/file/d/1K7uWUhsGN0DeIFsTd_663nxi7Il_SmuG/view?usp=sharing)
 
-Main files of transformer based models are called using an unification code.
+The main files of transformer-based models are called using a unification code.
 
 ## Results
 
