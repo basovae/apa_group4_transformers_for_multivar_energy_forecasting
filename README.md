@@ -79,11 +79,11 @@ The only pre trained model used in the analysis is Chronos.
 ├── checkpoints                                     -- iTransformer and nsAutoformer checkpoints
 ├── data                                            -- empty folder, insert data file there
 ├── iTransformer                                    -- iTransformer model files
-    ├── records                                     -- error metrics from trial different runs
-    ├── evaluate_tool.py                            -- code for defining evaluation metrics
-    ├── main.py                                     -- code for train, test and arguments
-    ├── pyplot.py                                   -- code for plotting functions
-    └── utils.py                                    -- supporting functions
+    ├── layers                                      -- python files for encoder-decoder, embedding and attention
+    ├── utils                                       -- supporting functions
+    ├── Model.py                                    -- iTransformer model
+    ├── exp_basic.py                                -- Skeleton for implementing the model, training, and testing methods
+    └── experiment.py                               -- Inherited from exp_basic with code implemented for model training and testing
 ├── ns_Autoformer                                   -- nsAutoformer model files
     ├── layers                                      -- python files for encoder-decoder, embedding and attention
     ├── ns_layers                                   -- python files for nonstationary encoder-decoder, embedding and attention
