@@ -14,13 +14,18 @@
   - [Setup](#Setup)
 - [Reproducing results](#Reproducing-results)
   - [Training code](#Training-code)
-  - [Pretrained models](#Pretrained-models)
 - [Results](#Results)
 - [Project structure](-Project-structure)
 
 ## Summary
 
-Empirical evaluation of recently published transformer-based models for multivariate energy time series forecasting.
+Empirical evaluation of recently published transformer-based models for multivariate energy price time series forecasting.
+
+The study examines four transformer models—Chronos, Basisformer, iTransformer, and Non-stationary Transformers—using European Wholesale Electricity Prices data, comparing their performance with traditional models like linear regression and Long Short-Term Memory (LSTM) networks.
+
+Through data preprocessing, model implementation, and performance benchmarking, the research reveals that iTransformer excels in both short and long-term forecasts, while Basisformer consistently delivers accurate results across different forecast horizons. In contrast, Chronos struggles with seasonality, leading to weaker performance.
+
+The research suggests future enhancements through data augmentation techniques, such as synthetic data generation using Gaussian processes, and advanced causal modeling frameworks like DYNOTEARS.
 
 ## Working with the repo
 
@@ -46,26 +51,15 @@ pip install -r requirements.txt
 
 ## Reproducing results
 
-To reproduce the results please clone the repository, insert data file into data folder, install the requirements and run the notebook code.
+To reproduce the results, clone the repository, paste the data file into the data folder, install the requirements and run the notebook code.
 
 ### Training code
 
 Main files of transformer based models are called using an unification code.
 
-### Pretrained models
-
-The only pre trained model used in the analysis is Chronos.
-
 ## Results
 
-**Model** **RMSE**
-
-0 Linear Regression 12.29
-1 LSTM 14.72
-2 Chronos 33.28
-3 Nonstationary Autoformer 0.14
-4 Basisformer 0.15
-5 iTransformer 0.12
+![results](/result.png)
 
 ## Project structure
 
